@@ -82,6 +82,9 @@ public class Player {
 
     public void win() {
         balance += bet * 2;
+        if(bet >= 100) {
+            balance += 10;
+        }
     }
 
     public void lose() {

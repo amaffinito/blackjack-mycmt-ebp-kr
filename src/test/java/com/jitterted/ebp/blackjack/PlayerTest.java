@@ -73,4 +73,24 @@ public class PlayerTest {
         }
         assertThat(player.busted());
     }
+
+    @Test
+    public void playerThatBets10Dollars5TimesHasBet50DollarsTotal() throws Exception {
+        Player player = new Player(PlayerType.PLAYER);
+        player.bet(10);
+        player.bet(10);
+        player.bet(10);
+        player.bet(10);
+        player.bet(10);
+        assertThat(player.totalAmountBet()).isEqualTo(50);
+    }
+
+    @Test
+    public void playerWith150Bets100WhenWinsBalanceIs260With10DollarBigBetBonus() throws Exception {
+        Player player = new Player(PlayerType.PLAYER);
+        player.deposit(150);
+        player.bet(100);
+        player.win();
+        assertThat(player.totalAmountBet()).isEqualTo(260);
+    }
 }
