@@ -9,9 +9,8 @@ import static org.fusesource.jansi.Ansi.ansi;
 public class Game {
 
   private final Deck deck;
-
-  private Hand dealerHand = new Hand();
-  private Hand playerHand = new Hand();
+  private Player dealer = new Player(PlayerType.DEALER);
+  private Player player = new Player(PlayerType.PLAYER);
   private int playerBalance = 0;
   private int playerBet = 0;
 
@@ -53,49 +52,18 @@ public class Game {
   }
 
   public void initialDeal() {
-    dealerHand = new Hand();
-    playerHand = new Hand();
-
-    // deal first round of cards, players first
-    dealHand();
-
-    // deal next round of cards
-    dealHand();
-  }
-
-  private void dealHand() {
-    drawCardIntoPlayerHand();
-    drawCardIntoDealerHand();
-  }
-
-  private void drawCardIntoDealerHand() {
-    dealerHand.add(deck.draw());
-  }
-
-  private void drawCardIntoPlayerHand() {
-    playerHand.add(deck.draw());
+    dealer.draw(deck, 2);
+    player.draw(deck, 2);
   }
 
   public void play() {
-    // get Player's decision: hit until they stand, then they're done (or they go bust)
-    boolean playerBusted = false;
-    while (!playerBusted) {
+    while (!player.busted()) {
       displayGameState();
-      String playerChoice = inputFromPlayer().toLowerCase();
-      if (playerChoice.startsWith("s")) {
-        break;
-      }
-      if (playerChoice.startsWith("h")) {
-        drawCardIntoPlayerHand();
-        playerBusted = playerHand.isBusted();
-      } else {
-        System.out.println("You need to [H]it or [S]tand");
-      }
+      player.choose(deck);
     }
 
-    // Dealer makes its choice automatically based on a simple heuristic (<=16, hit, 17>stand)
-    if (!playerBusted) {
-      dealerPlays();
+    if (!player.busted()) {
+      dealer.choose(deck);
     }
 
     displayFinalGameState();
@@ -103,30 +71,18 @@ public class Game {
     handleGameOutcome();
   }
 
-  private void dealerPlays() {
-    while (dealerHand.value() <= 16) {
-      drawCardIntoDealerHand();
-    }
-  }
-
   private void handleGameOutcome() {
-    if (playerHand.isBusted()) {
+    if (player.busted()) {
       System.out.println("You Busted, so you lose.  💸");
-    } else if (dealerHand.isBusted()) {
+    } else if (dealer.busted()) {
       System.out.println("Dealer went BUST, Player wins! Yay for you!! 💵");
-    } else if (playerHand.beats(dealerHand)) {
+    } else if (player.hand().beats(dealer.hand())) {
       System.out.println("You beat the Dealer! 💵");
-    } else if (playerHand.pushesWith(dealerHand)) {
+    } else if (player.hand().pushesWith(dealer.hand())) {
       System.out.println("Push: The house wins, you Lose. 💸");
     } else {
       System.out.println("You lost to the Dealer. 💸");
     }
-  }
-
-  private String inputFromPlayer() {
-    System.out.println("[H]it or [S]tand?");
-    Scanner scanner = new Scanner(System.in);
-    return scanner.nextLine();
   }
 
   private void displayGameState() {
@@ -148,7 +104,7 @@ public class Game {
 
   private void displayDealerUpCard() {
     System.out.println("Dealer has: ");
-    System.out.println(dealerHand.displayFirstCard()); // first card is Face Up
+    System.out.println(dealer.hand().displayFirstCard()); // first card is Face Up
   }
 
   private void clearScreen() {
@@ -172,39 +128,23 @@ public class Game {
 
   private void displayFinalDealerHand() {
     System.out.println("Dealer has: ");
-    dealerHand.displayHand();
-    System.out.println(" (" + dealerHand.value() + ")");
+    dealer.hand().displayHand();
+    System.out.println(" (" + dealer.hand().value() + ")");
   }
 
   private void displayPlayerHand() {
     System.out.println();
     System.out.println("Player has: ");
-    playerHand.displayHand();
-    System.out.println(" (" + playerHand.value() + ")");
+    player.hand().displayHand();
+    System.out.println(" (" + player.hand().value() + ")");
   }
 
-  public void playerDeposits(int amount) {
-    playerBalance += amount;
+  public Player dealer() {
+    return dealer;
   }
 
-  public void playerBets(int betAmount) {
-    playerBet = betAmount;
-    playerBalance -= betAmount;
+  public Player player() {
+    return player;
   }
 
-  public int playerBalance() {
-    return playerBalance;
-  }
-
-  public void playerWins() {
-    playerBalance += playerBet * 2;
-  }
-
-  public void playerLoses() {
-    playerBalance += playerBet * 0;
-  }
-
-  public void playerTies() {
-    playerBalance += playerBet * 1;
-  }
 }

@@ -44,6 +44,10 @@ public class Hand {
     return value() > 21;
   }
 
+  public int size() {
+    return cards.size();
+  }
+
   boolean beats(Hand hand) {
     return hand.value() < value();
   }
@@ -55,4 +59,5 @@ public class Hand {
   String displayFirstCard() {
     return cards.get(0).display();
   }
+
 }
