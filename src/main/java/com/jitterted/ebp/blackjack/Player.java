@@ -9,6 +9,7 @@ public class Player {
     private int bet = 0;
     private Hand hand = new Hand();
     private boolean busted = false;
+    private int totalAmountBet = 0;
 
     public Player(PlayerType playerType) {
         this.playerType = playerType;
@@ -28,6 +29,7 @@ public class Player {
     }
 
     public void bet(int betAmount) {
+        totalAmountBet += betAmount;
         bet = betAmount;
         balance -= betAmount;
     }
@@ -88,5 +90,9 @@ public class Player {
 
     public void tie() {
         balance += bet * 1;
+    }
+
+    public int totalAmountBet() {
+        return totalAmountBet;
     }
 }
